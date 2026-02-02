@@ -1,0 +1,86 @@
+conky.config = {
+    -- 核心配置
+    background = true,
+    update_interval = 1,
+    double_buffer = true,
+    no_buffers = true,
+    text_buffer_size = 4096,
+
+    -- 窗口设置
+    own_window = true,
+    own_window_type = 'normal',
+    own_window_transparent = true,
+    own_window_hints = 'undecorated,below,sticky,skip_taskbar,skip_pager',
+    own_window_argb_visual = true,
+    own_window_argb_value = 0,
+
+    -- 字体设置
+    use_xft = true,
+    font = 'Noto Sans CJK SC:bold:size=10',
+    xftalpha = 0.9,
+    uppercase = true,
+    override_utf8_locale = true,
+
+    -- 颜色设置
+    default_color = '#FFFFFF',
+    color1 = '#00FF00',
+    color2 = '#FFD700',
+    color3 = '#FF4500',
+    color4 = '#00BFFF', -- 标题天蓝色
+
+    -- 位置设置 (右上角)
+    alignment = 'top_right',
+    gap_x = 15,
+    gap_y = 20,
+    minimum_width = 330,
+    maximum_width = 600,
+    minimum_height = 700,
+};
+
+conky.text = [=[
+# --- 顶部大时钟 ---
+${alignr}${color4}${font Noto Sans CJK SC:bold:size=34}${time %H:%M}${font}${color}
+${alignr}${time %Y年%m月%d日 %A}
+${voffset 5}
+# --- 树状图开始 ---
+${alignc}${color4}${font Noto Sans CJK SC:bold:size=20}< ${uptime} > 运行时间${font}${color}
+${alignr}└────────┐
+${alignr}MANJARO LINUX X86_64 ─┤
+${alignr}< ${kernel} > 内核版本 ─┘   │
+${alignr}│
+${alignr}${color4}CPU SYSTEM${color} ─┤
+${alignr}<${execi 1000 cat /proc/cpuinfo | grep 'model name' | head -1 | sed 's/model name.*: //' | cut -c 1-25}> ─┤   │
+${alignr}< ${cpu}% > 使用率 ─┤   │
+${alignr}< ${if_match ${execi 5 sensors | grep 'Package id 0:' | awk -F'+' '{print $2}' | awk -F'.' '{print $1}' || echo 0} > 70}${color3}${else}${color}${endif}${execi 5 sensors | grep 'Package id 0:' | awk -F'+' '{print $2}' | awk -F'.' '{print $1}' || echo "N/A"}°C > 温度 ─┘   │
+${alignr}│
+${alignr}${color4}GPU SYSTEM${color} ─┤
+${alignr}INTEL ARC GRAPHICS (核显) ─┤   │
+# 智能GPU逻辑 (驱动未加载时显示休眠)
+${if_match "${execi 5 nvidia-smi -L >/dev/null 2>&1 && echo 1 || echo 0}" == "1"}${alignr}< NVIDIA RTX 5060 (独显) > ─┤   │
+${alignr}< ${execi 5 nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits}% > 负载 ─┤   │
+${alignr}< ${execi 5 nvidia-settings -t -q [gpu]/GPUCoreTemp}°C > 温度 ─┘   │${else}${alignr}< NVIDIA RTX 5060 (已休眠) > ─┘   │${endif}
+${alignr}│
+${alignr}${color4}MEMORY INFO${color} ─┤
+${alignr}< ${mem} / ${memmax} (${memperc}%)> 占用 ─┘   │
+${alignr}│
+${alignr}${color4}硬盘信息${color} ─┤
+${alignr}硬盘1：${execi 1000 lsblk -no model /dev/nvme0n1 | tr -d '\n'} ─┤   │
+${alignr}< ${diskio_read /dev/nvme0n1} >读,< ${diskio_write /dev/nvme0n1} >写,< ${if_match ${execi 30 /bin/bash -c 'sudo smartctl -A /dev/nvme0n1 2>/dev/null | grep "^Temperature:" | awk "{print \$2}" || echo 0'} > 50}${color3}${else}${if_match ${execi 30 /bin/bash -c 'sudo smartctl -A /dev/nvme0n1 2>/dev/null | grep "^Temperature:" | awk "{print \$2}" || echo 0'} > 40}${color2}${else}${color}${endif}${endif}${execi 30 /bin/bash -c 'sudo smartctl -A /dev/nvme0n1 2>/dev/null | grep "^Temperature:" | awk "{print \$2}" || echo "N/A"'}°C${color} > 温度─┤   │
+${alignr}硬盘2：${execi 1000 lsblk -no model /dev/nvme1n1 | tr -d '\n'} ─┤   │
+${alignr}< ${diskio_read /dev/nvme1n1} >读,< ${diskio_write /dev/nvme1n1}>写,< ${if_match ${execi 30 /bin/bash -c 'sudo smartctl -A /dev/nvme1n1 2>/dev/null | grep "^Temperature:" | awk "{print \$2}" || echo 0'} > 50}${color3}${else}${if_match ${execi 30 /bin/bash -c 'sudo smartctl -A /dev/nvme1n1 2>/dev/null | grep "^Temperature:" | awk "{print \$2}" || echo 0'} > 40}${color2}${else}${color}${endif}${endif}${execi 30 /bin/bash -c 'sudo smartctl -A /dev/nvme1n1 2>/dev/null | grep "^Temperature:" | awk "{print \$2}" || echo "N/A"'}°C${color} > 温度─┤   │
+${alignr}< ${fs_used /}/${fs_size /} (${fs_used_perc /}%) > 根分区 ─┘   │
+${alignr}│
+${alignr}${color4}NETWORK INFO${color} ─┤
+${alignr}< ${nodename} > 主机名 ─┤   │
+${alignr}< ${execi 600 curl -s --connect-timeout 3 ifconfig.co || echo "N/A"} > 公网IP ─┤   │
+# --- 智能系统总速率 (防弹单行版) ---
+${execpi 3 GW=$(ip route | grep ^default | sed 's/.*dev //; s/ .*//' | head -n1); if [ "$GW" != "enp0s31f6" ] && [ "$GW" != "wlp0s20f3" ]; then T=${GW:-"lo"}; echo "\${alignr}< \${downspeed $T}↓ \${upspeed $T}↑ > 系统总速率 ─┤   │"; fi}
+${alignr}│   │
+# --- WIFI (常驻显示) ---
+${if_existing /sys/class/net/wlp0s20f3}${if_match "${addr wlp0s20f3}" != "No Address"}${alignr}WI-FI 7 (BE201): ${addr wlp0s20f3} ─┤   │
+${alignr}< ${downspeed wlp0s20f3}↓ ${upspeed wlp0s20f3}↑ >─┤   │${else}${alignr}WI-FI 7 (BE201): 未连接 ─┤   │${endif}${else}${alignr}WI-FI 7 (BE201): 设备不存在 ─┤   │${endif}
+# --- ETHERNET (常驻显示) ---
+${if_existing /sys/class/net/enp0s31f6}${if_match "${addr enp0s31f6}" != "No Address"}${alignr}INTEL ETHERNET: ${addr enp0s31f6} ─┤   │
+${alignr}< ${downspeed enp0s31f6}↓ ${upspeed enp0s31f6}↑ >─┘   │${else}${alignr}INTEL ETHERNET: 未连接 ─┘   │${endif}${else}${alignr}INTEL ETHERNET: 设备不存在 ─┘   │${endif}
+${alignr}───────────────────────────┘
+]=]
