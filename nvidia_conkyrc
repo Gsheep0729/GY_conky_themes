@@ -45,7 +45,7 @@ ${voffset 5}
 # --- 树状图开始 ---
 ${alignc}${color4}${font Noto Sans CJK SC:bold:size=20}< ${uptime} > 运行时间${font}${color}
 ${alignr}└────────┐
-${alignr}MANJARO LINUX X86_64 ─┤
+${alignr}${execi 1000 cat /etc/os-release | grep PRETTY_NAME | cut -d= -f2 | tr -d '"'} ${machine} ─┤
 ${alignr}< ${kernel} > 内核版本 ─┘   │
 ${alignr}│
 ${alignr}${color4}CPU SYSTEM${color} ─┤
