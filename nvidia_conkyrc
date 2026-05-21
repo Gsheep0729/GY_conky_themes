@@ -52,8 +52,9 @@ ${alignr}│
 ${alignr}${color4}CPU SYSTEM${color} ─┤
 ${alignr}<${execi 1000 cat /proc/cpuinfo | grep 'model name' | head -1 | sed 's/model name.*: //' | cut -c 1-25}> ─┤   │
 ${alignr}< ${cpu}% > 使用率 ─┤   │
-${alignr}< ${execi 5 sensors 2>/dev/null | grep "power1" | awk '{print $2}'} W > 芯片功耗 ─┤   │
-${alignr}< ${if_match ${execi 5 sensors | grep 'Package id 0:' | awk -F'+' '{print $2}' | awk -F'.' '{print $1}' || echo 0} > 70}${color3}${else}${color}${endif}${execi 5 sensors | grep 'Package id 0:' | awk -F'+' '{print $2}' | awk -F'.' '{print $1}' || echo "N/A"}°C > 温度 ─┘   │
+# ${alignr}< ${execi 2 E_NOW=$(cat /sys/class/powercap/intel-rapl:0/energy_uj 2>/dev/null); if [ -f /tmp/c_p_e ]; then E_LAST=$(cat /tmp/c_p_e); else E_LAST=$E_NOW; fi; echo "$E_NOW" > /tmp/c_p_e; awk -v n="$E_NOW" -v l="$E_LAST" 'BEGIN {if(n>0 && l>0 && n>=l) printf "%.2f", (n-l)/1000000; else printf "0.00"}' 2>/dev/null} W > 芯片功耗 ─┤   │
+${alignr}< ${if_match ${execi 5 sensors 2>/dev/null | grep -i 'Package id 0' | awk -F'+' '{print $2}' | awk -F'.' '{print $1}' || echo 0} > 70}${color3}${else}${color}${endif}${execi 5 sensors 2>/dev/null | grep -i 'Package id 0' | awk -F'+' '{print $2}' | awk -F'.' '{print $1}' || echo "N/A"}°C > 温度 ─┘   │
+${alignr}│
 ${alignr}│
 # --- GPU ---
 ${alignr}${color4}GPU SYSTEM${color} ─┤
@@ -63,7 +64,7 @@ ${alignr}[ 运行模式: ${execi 5 lsmod | grep -q nvidia && (nvidia-smi --query
 ${if_match "${execi 5 lsmod | grep -q nvidia && echo 1 || echo 0}" == "1"}${if_match "${execi 5 nvidia-smi -L >/dev/null 2>&1 && echo 1 || echo 0}" == "1"}${alignr}< NVIDIA RTX 5060 (独显) > ─┤   │
 ${alignr}< ${execi 5 nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits}% > 负载 ─┤   │
 ${alignr}< ${execi 5 nvidia-smi --query-gpu=power.draw --format=csv,noheader,nounits} W > 功耗 ─┤   │
-${alignr}< ${execi 5 nvidia-settings -t -q [gpu]/GPUCoreTemp}°C > 温度 ─┘   │${else}${alignr}< NVIDIA RTX 5060 (已休眠) > ─┘   │${endif}${else}${alignr}< NVIDIA 独显已关闭/不可用 > ─┘   │${endif}
+${alignr}< ${execi 5 nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits}°C > 温度 ─┘   │${else}${alignr}< NVIDIA RTX 5060 (已休眠) > ─┘   │${endif}${else}${alignr}< NVIDIA 独显已关闭/不可用 > ─┘   │${endif}
 ${alignr}│
 # --- MEMORY ---
 ${alignr}${color4}MEMORY INFO${color} ─┤

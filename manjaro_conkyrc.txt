@@ -52,7 +52,7 @@ ${alignr}│
 ${alignr}${color4}CPU SYSTEM${color} ─┤
 ${alignr}<${execi 1000 cat /proc/cpuinfo | grep 'model name' | head -1 | sed 's/model name.*: //' | cut -c 1-25}> ─┤   │
 ${alignr}< ${cpu}% > 使用率 ─┤   │
-${alignr}< ${execi 5 sensors 2>/dev/null | grep "power1" | awk '{print $2}'} W > 芯片功耗 ─┤   │
+${alignr}< ${execi 5 E1=$(cat /sys/class/powercap/intel-rapl:0/energy_uj); sleep 1; E2=$(cat /sys/class/powercap/intel-rapl:0/energy_uj); awk -v e1="$E1" -v e2="$E2" 'BEGIN {printf "%.2f", (e2-e1)/1000000}' 2>/dev/null || echo "N/A"} W > 芯片功耗 ─┤   │
 ${alignr}< ${if_match ${execi 5 sensors | grep 'Package id 0:' | awk -F'+' '{print $2}' | awk -F'.' '{print $1}' || echo 0} > 70}${color3}${else}${color}${endif}${execi 5 sensors | grep 'Package id 0:' | awk -F'+' '{print $2}' | awk -F'.' '{print $1}' || echo "N/A"}°C > 温度 ─┘   │
 ${alignr}│
 # --- GPU ---
