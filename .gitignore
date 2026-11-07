@@ -1,0 +1,7 @@
+backups/
+**/__pycache__/
+*.pyc
+
+# Reproducible release archives; sources and manifests are versioned.
+conky-classic-portable-*.tar.gz
+conky-classic-portable-*.tar.gz.sha256

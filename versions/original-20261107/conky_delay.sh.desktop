@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Exec=/home/gy_ubuntu/.conky/autostart/conky_delay.sh
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name[zh_CN]=conky启动程序
+Name=conky启动程序
+Comment[zh_CN]=conky启动程序/home/gy_ubuntu/.conky/autostart/conky_delay.sh
+Comment=conky启动程序/home/gy_ubuntu/.conky/autostart/conky_delay.sh
