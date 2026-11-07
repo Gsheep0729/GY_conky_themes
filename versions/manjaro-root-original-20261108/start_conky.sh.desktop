@@ -1,0 +1,7 @@
+[Desktop Entry]
+Exec=/root/.config/conky/start_conky.sh
+Icon=
+Name=start_conky.sh
+Path=
+Terminal=False
+Type=Application

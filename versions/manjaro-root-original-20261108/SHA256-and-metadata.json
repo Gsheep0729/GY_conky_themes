@@ -1,0 +1,20 @@
+{
+  "root/.config/conky/manjaro_conkyrc": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "sha256": "1c561f2a56f78281421ebb5aba74a7149c250732a709ba1e27873ecf7b6c7063"
+  },
+  "root/.config/conky/start_conky.sh": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "sha256": "e6226eaf2aa5affa48a68310cc21783f3a285679adbb6d74f1caaf110a4a4c2d"
+  },
+  "root/.config/autostart/start_conky.sh.desktop": {
+    "mode": 384,
+    "uid": 0,
+    "gid": 0,
+    "sha256": "2e7a72430b33cfd2e7177bf6b318d2b279667e94193eba7a31c9b2fdb529736c"
+  }
+}

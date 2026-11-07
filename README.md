@@ -24,4 +24,4 @@ python3 -m unittest discover -s tests -v
 
 本轮简约显示是在上一候选 `457197a` 上的独立提交，采集器/启动器未改。54项测试及实际窗口检查通过；硬盘和网络输出保持一致，左侧窗口由721px缩短至529px。正式替换和自启动切换仍未执行。
 
-Manjaro Plasma 的离线部署和严格0号屏适配见 [专用说明](platforms/manjaro-plasma/README.md)。当前只完成文件部署及模拟验证，目标会话仍待实机验收。
+Manjaro Plasma 实际自动登录root，已按用户明确授权原位替换/root中的旧主题/启动脚本/原自启，并撤回此前误装的mjr版本。固定0号屏和回退见 [专用说明](platforms/manjaro-plasma/README.md)。目标会话仍待实机验收。
