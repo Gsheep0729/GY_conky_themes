@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from classic import TEMPLATE, make_config, render, gpu_rows
+from classic import TEMPLATE, make_config, render, gpu_rows, memory_gb
 from conky_tree import Collector, DEFAULTS, DrmSampler
 from start import validate_monitor
 
@@ -17,7 +17,7 @@ class ClassicTest(unittest.TestCase):
     def fixture(self):
         return {'sample_unix': time.time(), 'static': {'os': 'Test Linux', 'cpu': 'Test CPU'},
                 'cpu_percent': 12.5, 'sensors': {'cpu_temperature': 55},
-                'memory_total': 16000000000, 'memory_used': 8000000000,
+                'memory_total': 16000000000, 'memory_used': 8000000000,'memory_method':'MemAvailable',
                 'gpus': [{'role': 'integrated', 'name': 'Intel Test', 'driver': 'i915',
                           'vendor': '0x8086', 'engines': {'render': 12.5, 'video': 0.0}}],
                 'disks': {'devices': [{'device': 'nvme7n1', 'model': 'Test disk', 'temperature': None}]},
@@ -30,16 +30,19 @@ class ClassicTest(unittest.TestCase):
             return dict(re.findall(r'^\s*(\w+)\s*=\s*(.*?),\s*(?:--.*)?$', text, re.M))
         a, b = settings(original), settings(candidate)
         self.assertEqual({k: v for k, v in b.items() if k not in ['background', 'text_buffer_size', 'xinerama_head']},
-                         {k: v for k, v in a.items() if k not in ['background', 'text_buffer_size']})
+                         {k: v for k, v in a.items() if k not in ['background', 'text_buffer_size','minimum_height']})
         self.assertEqual(b['xinerama_head'], '0')
         self.assertEqual(b['background'], 'false')
+        self.assertNotIn('minimum_height',b)
 
-    def test_clock_font_color_and_memory_are_unchanged(self):
+    def test_minimal_display_keeps_uptime_font_and_tree(self):
         output = render(self.fixture())
-        self.assertIn('${font Noto Sans CJK SC:bold:size=34}${time %H:%M}', output)
-        self.assertIn('${voffset 5}', output)
         self.assertIn('${font Noto Sans CJK SC:bold:size=20}< ${uptime} > 运行时间', output)
-        self.assertIn('${alignr}< ${mem} / ${memmax} (${memperc}%)> 占用 ─┘   │', output)
+        self.assertIn('${alignr}< 8.00 GB > 已使用 ─┘   │', output)
+        self.assertIn('Test Linux',output)
+        self.assertIn('${kernel}',output)
+        for removed in ['${time','${machine}','${mem}','${memmax}','${memperc}','Test CPU','55°C']:
+            self.assertNotIn(removed,output)
         self.assertIn('${alignr}───────────────────────────┘', output)
         self.assertNotIn('${exec', output)
         self.assertNotIn('sudo', output)
@@ -51,6 +54,42 @@ class ClassicTest(unittest.TestCase):
         self.assertIn('< 12.5% > 核显渲染（本用户）', output)
         self.assertNotIn('计算', output)
         self.assertNotIn('复制', output)
+
+    def test_memory_decimal_GB_estimate_zero_and_unknown(self):
+        self.assertEqual(memory_gb({'memory_used':8750000000,'memory_method':'MemAvailable'}),'8.75 GB')
+        self.assertEqual(memory_gb({'memory_used':1073741824}),'1.07 GB')
+        self.assertEqual(memory_gb({'memory_used':8750000000,'memory_method':'legacy estimate'}),'≈8.75 GB')
+        self.assertEqual(memory_gb({'memory_used':0}),'0.00 GB')
+        for value in [None,-1,float('nan'),float('inf'),'8GB',True]:
+            with self.subTest(value=value):self.assertEqual(memory_gb({'memory_used':value}),'不可用')
+        self.assertEqual(memory_gb({'memory_used':8750000000},stale=True),'不可用')
+
+    def test_single_and_dual_GPU_only_show_topology_and_loads(self):
+        integrated=self.fixture()['gpus'][0]
+        discrete={'role':'discrete','driver':'nvidia','state':'active','name':'Secret Model','utilization':35,'temperature':60,'power':55,'memory_used':2000,'memory_total':8000}
+        single=gpu_rows([integrated]);dual=gpu_rows([integrated,discrete]);only_discrete=gpu_rows([discrete])
+        self.assertEqual(len(single),2);self.assertEqual(len(dual),3);self.assertEqual(len(only_discrete),2)
+        self.assertIn('双 GPU 可见',dual[0]);self.assertIn('仅独显可见',only_discrete[0]);self.assertIn('35.0%',dual[-1])
+        for removed in ['Secret Model','温度','功耗','显存','未枚举']:
+            self.assertNotIn(removed,''.join(dual))
+        self.assertEqual(gpu_rows([]),['[ 未枚举图形设备 ]','占用率：不可用'])
+
+    def test_discrete_unavailable_and_suspended_never_reuse_old_load(self):
+        base={'role':'discrete','name':'NVIDIA','driver':'nvidia','state':'active','utilization':99}
+        suspended=gpu_rows([dict(base,state='suspended')])
+        self.assertEqual(suspended[-1],'独显：挂起')
+        for change in [{'state':'unknown'},{'driver':None},{'utilization':None}]:
+            output=''.join(gpu_rows([dict(base,**change)]))
+            self.assertIn('不可用',output);self.assertNotIn('99.0%',output)
+
+    def test_disk_and_network_identical_to_previous_commit_for_shared_inputs(self):
+        fixtures=json.loads((Path(__file__).parent/'fixtures/display-invariants.json').read_text())
+        for case in fixtures:
+            with self.subTest(case=case['name']),patch('classic.time.time',return_value=1000):
+                output=render(case['data'])
+                disk=output.split('${alignr}${color4}HARD DISK',1)[1].split('${alignr}${color4}NETWORK INFO',1)[0]
+                network=output.split('${alignr}${color4}NETWORK INFO',1)[1]
+                self.assertEqual(disk,case['disk']);self.assertEqual(network,case['network'])
 
     def test_unknown_and_missing_driver_discrete_do_not_change_rows(self):
         g = {'role': 'discrete', 'name': 'NVIDIA Test', 'driver': 'nvidia', 'state': 'active'}

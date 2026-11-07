@@ -1,0 +1,135 @@
+[
+  {
+    "name": "normal",
+    "data": {
+      "sample_unix": 1000,
+      "static": {
+        "os": "Test Linux",
+        "cpu": "Test CPU"
+      },
+      "cpu_percent": 25,
+      "memory_total": 16000000000,
+      "memory_used": 8750000000,
+      "memory_method": "MemAvailable",
+      "gpus": [],
+      "sensors": {
+        "cpu_temperature": 55
+      },
+      "disks": {
+        "root_total": 1000000000,
+        "devices": [
+          {
+            "device": "nvme0n1",
+            "model": "SSD A",
+            "read_bps": 4096,
+            "write_bps": 8192,
+            "temperature": 35
+          },
+          {
+            "device": "nvme1n1",
+            "model": "SSD B",
+            "read_bps": 0,
+            "write_bps": 1048576,
+            "temperature": 55
+          }
+        ]
+      },
+      "networks": [
+        {
+          "physical": true,
+          "rx_bps": 123456,
+          "tx_bps": 654321
+        },
+        {
+          "physical": false,
+          "rx_bps": 999999,
+          "tx_bps": 999999
+        }
+      ]
+    },
+    "disk": "${color} ─┤\n${alignr}硬盘1：SSD A ─┤   │\n${alignr}< 4.0KiB >读,< 8.0KiB >写,< ${color}35°C${color} > 温度 ─┤   │\n${alignr}硬盘2：SSD B ─┤   │\n${alignr}< 0.0B >读,< 1.0MiB >写,< ${color3}55°C${color} > 温度 ─┤   │\n${alignr}< ${fs_used /}/${fs_size /} (${fs_used_perc /}%) > 根分区 ─┘   │\n${alignr}│\n",
+    "network": "${color} ─┤\n${alignr}< 120.6KiB/s↓ 639.0KiB/s↑ > 总速率 ─┘   │\n${alignr}───────────────────────────┘\n"
+  },
+  {
+    "name": "unknown",
+    "data": {
+      "sample_unix": 1000,
+      "static": {
+        "os": "Test Linux",
+        "cpu": "Test CPU"
+      },
+      "cpu_percent": 25,
+      "memory_total": 16000000000,
+      "memory_used": 8750000000,
+      "memory_method": "MemAvailable",
+      "gpus": [],
+      "sensors": {
+        "cpu_temperature": 55
+      },
+      "disks": {
+        "devices": [],
+        "root_total": null
+      },
+      "networks": [
+        {
+          "physical": true,
+          "rx_bps": null,
+          "tx_bps": null
+        }
+      ]
+    },
+    "disk": "${color} ─┤\n${alignr}硬盘信息：不可用 ─┤   │\n${alignr}< 不可用 > 根分区 ─┘   │\n${alignr}│\n",
+    "network": "${color} ─┤\n${alignr}< —↓ —↑ > 总速率 ─┘   │\n${alignr}───────────────────────────┘\n"
+  },
+  {
+    "name": "stale",
+    "data": {
+      "sample_unix": 1,
+      "static": {
+        "os": "Test Linux",
+        "cpu": "Test CPU"
+      },
+      "cpu_percent": 25,
+      "memory_total": 16000000000,
+      "memory_used": 8750000000,
+      "memory_method": "MemAvailable",
+      "gpus": [],
+      "sensors": {
+        "cpu_temperature": 55
+      },
+      "disks": {
+        "root_total": 1000000000,
+        "devices": [
+          {
+            "device": "nvme0n1",
+            "model": "SSD A",
+            "read_bps": 4096,
+            "write_bps": 8192,
+            "temperature": 35
+          },
+          {
+            "device": "nvme1n1",
+            "model": "SSD B",
+            "read_bps": 0,
+            "write_bps": 1048576,
+            "temperature": 55
+          }
+        ]
+      },
+      "networks": [
+        {
+          "physical": true,
+          "rx_bps": 123456,
+          "tx_bps": 654321
+        },
+        {
+          "physical": false,
+          "rx_bps": 999999,
+          "tx_bps": 999999
+        }
+      ]
+    },
+    "disk": "${color} ─┤\n${alignr}硬盘1：SSD A ─┤   │\n${alignr}< — >读,< — >写,< 不可用 > 温度 ─┤   │\n${alignr}硬盘2：SSD B ─┤   │\n${alignr}< — >读,< — >写,< 不可用 > 温度 ─┤   │\n${alignr}< ${fs_used /}/${fs_size /} (${fs_used_perc /}%) > 根分区 ─┘   │\n${alignr}│\n",
+    "network": "${color} ─┤\n${alignr}< —↓ —↑ > 总速率 ─┘   │\n${alignr}───────────────────────────┘\n"
+  }
+]

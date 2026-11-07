@@ -2,6 +2,7 @@
 """Keep the accepted template's visual style; replace unsafe hardware commands."""
 import argparse
 import json
+import math
 import re
 import time
 import unicodedata
@@ -26,7 +27,17 @@ def fit(value, cells=34):
 
 
 def percent(value):
-    return '—' if value is None else f'{value:.1f}%'
+    if not isinstance(value,(int,float)) or isinstance(value,bool) or not math.isfinite(value) or not 0<=value<=100:
+        return '不可用'
+    return f'{value:.1f}%'
+
+
+def memory_gb(data, stale=False):
+    used=data.get('memory_used')
+    if stale or not isinstance(used,(int,float)) or isinstance(used,bool) or not math.isfinite(used) or used<0:
+        return '不可用'
+    approximate='≈' if data.get('memory_method')=='legacy estimate' else ''
+    return approximate+f'{used/1_000_000_000:.2f} GB'
 
 
 def speed(value):
@@ -62,29 +73,13 @@ def gpu_rows(gpus):
                 label = ('核显' if g.get('role') == 'integrated' else 'GPU') + '（驱动未接管）'
             values.append('< ' + percent(value) + ' > ' + label)
             continue
-        name = g.get('name', 'GPU')
-        match = re.search(r'\[([^\]]+)\]', name)
-        if match:
-            name = match[1]
-        if g.get('vendor') == '0x8086' and 'intel' not in name.lower():
-            name = 'Intel ' + name
-        values.append('< ' + fit(name, 32) + ' · ' + fit(g.get('driver') or '无驱动', 8) + ' >')
-        if g.get('role') == 'discrete':
-            state = g.get('state')
-            status = '驱动未接管' if not g.get('driver') else '活动' if state == 'active' else '挂起，不主动查询' if state == 'suspended' else '电源状态不可读'
-            if state == 'active' and g.get('driver') and g.get('utilization') is None:
-                status += ' · 遥测不可用'
-            active = bool(g.get('driver')) and state == 'active'
-            values.append('状态：' + status)
-            values.append('< ' + percent(g.get('utilization') if active else None) + ' > 负载 · ' +
-                          temperature(g.get('temperature') if active else None))
-            used, total, power = (g.get(k) if active else None for k in ['memory_used', 'memory_total', 'power'])
-            memory = f'{used:.0f}/{total:.0f} MiB' if used is not None and total is not None else '—'
-            values.append('显存 ' + memory + ' · 功耗 ' + (f'{power:.1f} W' if power is not None else '—'))
-    if not any(g.get('role') == 'discrete' for g in gpus):
-        values.append('独显：未枚举')
-    elif not any(g.get('role') == 'integrated' for g in gpus):
-        values.append('核显：未枚举')
+        if g.get('driver') and g.get('state')=='suspended':
+            values.append('独显：挂起')
+        else:
+            value=g.get('utilization') if g.get('driver') and g.get('state')=='active' else None
+            values.append('< '+percent(value)+' > 独显占用')
+    if not gpus:
+        values.append('占用率：不可用')
     return values
 
 
@@ -101,28 +96,22 @@ def render(data, template=None):
     body = source.split('conky.text = [=[\n', 1)[1].rsplit(']=]', 1)[0]
     stale = not data or time.time() - data.get('sample_unix', 0) > 15
     static = data.get('static', {})
-    prefix, rest = body.split('# --- CPU ---\n', 1)
-    prefix = re.sub(r'\$\{execi 1000 [^\n]+?\}', lambda _: fit(static.get('os', '系统信息不可用'), 36), prefix)
-    _, rest = rest.split('# --- GPU ---\n', 1)
-    _, rest = rest.split('# --- MEMORY ---\n', 1)
-    memory, rest = rest.split('# --- DISK ---\n', 1)
-    if not data.get('memory_total') or data.get('memory_used') is None:
-        memory=memory.replace('${mem}','不可用').replace('${memmax}','不可用').replace('${memperc}','—')
-    rest.split('# ---NET---\n', 1)  # Require the expected template boundary.
-    # Headers and tree suffixes use the accepted original theme, not a new layout.
+    # Preserve the accepted uptime typography, but omit the wall clock/date.
+    uptime=next(line for line in body.splitlines() if '${uptime}' in line)
+    prefix=uptime+'\n${alignr}└────────┐\n'
+    prefix+='${alignr}'+fit(static.get('os','系统信息不可用'),36)+' ─┤\n'
+    prefix+='${alignr}< ${kernel} > 内核版本 ─┘   │\n${alignr}│\n'
     cpu = '${alignr}${color4}CPU SYSTEM${color} ─┤\n'
-    cpu_name = re.sub(r'\((?:R|TM)\)', '', static.get('cpu', 'CPU 型号不可读'), flags=re.I)
-    cpu_name = re.sub(r'\s+', ' ', cpu_name).strip()
-    cpu += rows(['<' + fit(cpu_name, 25) + '>',
-                 '< ' + percent(None if stale else data.get('cpu_percent')) + ' > 使用率',
-                 '< ' + temperature(None if stale else data.get('sensors', {}).get('cpu_temperature'), cpu=True) + ' > 温度'])
-    cpu += '${alignr}│\n${alignr}│\n'
+    cpu += rows(['< '+percent(None if stale else data.get('cpu_percent'))+' > 使用率'])
+    cpu += '${alignr}│\n'
     gpus = data.get('gpus', [])
     if stale:
         gpus = [dict(g, engines={}, utilization=None, temperature=None, power=None, memory_used=None, memory_total=None) for g in gpus]
     gpu = '${alignr}${color4}GPU SYSTEM${color} ─┤\n' + rows(gpu_rows(gpus)) + '${alignr}│\n'
     if stale:
         gpu = gpu.replace('[ ' + topology(gpus) + ' ]', '[ 采集暂停/等待 · ' + topology(gpus) + ' ]')
+    memory='${alignr}${color4}MEMORY INFO${color} ─┤\n'
+    memory+=rows(['< '+memory_gb(data,stale)+' > 已使用'])+'${alignr}│\n'
     disks = data.get('disks', {}).get('devices', [])
     disk = '${alignr}${color4}HARD DISK${color} ─┤\n'
     disk_values = []
@@ -133,7 +122,7 @@ def render(data, template=None):
                            temperature(None if stale else d.get('temperature')) + ' > 温度')
     if not disks:
         disk_values.append('硬盘信息：不可用')
-    # The original memory/root filesystem variables and typography remain native.
+    # Root filesystem values and all disk rows retain the previous display.
     if data.get('disks',{}).get('root_total'):
         disk_values.append('< ${fs_used /}/${fs_size /} (${fs_used_perc /}%) > 根分区')
     else:
@@ -155,8 +144,9 @@ def make_config(cfg, head, base, state):
     source = (Path(base)/'original-template.conf').read_text()
     settings = source.split('conky.text = [=[', 1)[0]
     settings = re.sub(r'background\s*=\s*true', 'background = false', settings, count=1)
-    # All style values are inherited unchanged. Only supervision, buffer size
-    # and explicit monitor pinning are runtime changes.
+    # The compact window follows content height; remaining visual settings
+    # continue to come from the accepted original template.
+    settings=re.sub(r'^\s*minimum_height\s*=\s*700,\s*$', '', settings, flags=re.M)
     settings = re.sub(r'text_buffer_size\s*=\s*4096', 'text_buffer_size = 16384', settings, count=1)
     settings = settings.replace('conky.config = {', 'conky.config = {\n    xinerama_head = ' + str(cfg['monitor_index']) + ',', 1)
     path = str(Path(state).with_suffix('.text'))
