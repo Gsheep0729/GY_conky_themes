@@ -250,4 +250,3 @@ def geometry(head, resources, workareas, desktop):
     else:top+=20
     return {'scale':scale,'gap_x':round(15*scale),'gap_y':top-head['y'],
             'target_top':top,'workarea':area if valid else None,'position_reason':reason}
-
