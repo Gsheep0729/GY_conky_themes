@@ -45,7 +45,7 @@ def main():
         except ProcessLookupError:pass
         finally:
             if handle is not None:os.close(handle)
-    os.execv(sys.executable,[sys.executable,str(base/'start.py'),'--delay','0'])
+    os.execv(sys.executable,[sys.executable,str(base/'top_start.py'),'--delay','0','--xwayland-backend'])
 
 
 if __name__=='__main__':

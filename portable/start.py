@@ -70,6 +70,10 @@ def main():
               'conky':shutil.which('conky'),'python':sys.version.split()[0],
               'monitors':monitors(),'configuration':cfg,
               'warning':'Only actually tested desktop/session combinations are validated'},ensure_ascii=False,indent=2));return
+    if cfg['layout']=='top':
+        if args.preview:raise RuntimeError('Use preview_top.py for top-layout comparisons')
+        from top_start import main as top_main
+        top_main();return
     runtime=Path(os.environ.get('XDG_RUNTIME_DIR',str(Path.home()/'.cache')))/('conky-classic-preview' if args.preview else 'conky-classic-tree')
     runtime.mkdir(mode=0o700,parents=True,exist_ok=True)
     lock=(runtime/'instance.lock').open('w')

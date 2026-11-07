@@ -69,8 +69,8 @@ def config(path):
     for k in ['sample_seconds', 'gpu_seconds', 'gpu_battery_seconds']:
         if not isinstance(out[k], (int, float)) or not 1 <= out[k] <= 300:
             raise ValueError('invalid interval: ' + k)
-    if out.get('layout') != 'classic':
-        raise ValueError('Only the original classic layout is supported by this candidate')
+    if out.get('layout') not in ['classic','top']:
+        raise ValueError('layout must be classic or top')
     return out
 
 def clean(value, limit=45):

@@ -6,7 +6,7 @@
 
 ## 替换行为
 
-界面和采集沿用已选定的 `a15f7dd` 树线简约版。原配置文件已改用新缓存，原启动脚本和原自启条目直接进入 `root_session_start.py`；没有另加一份root自启条目。先准备同款Noto CJK用户字体，延迟30秒，再启动采集和Conky。
+本轮同步目标改为已接受的7.5pt顶部连通树：左侧树干、分支向右、五列共享主干，内存已用/总量。独立正式入口为`top_start.py`，不依赖Ubuntu预览缓存；同步结果见项目 `MANJARO-TOP-SYNC-20261108.md`。此前a15f7dd竖版保留作回退。原启动脚本和原自启条目继续进入 `root_session_start.py`，再进入顶部正式启动器；没有另加一份root自启条目。先准备同款Noto CJK用户字体，延迟30秒，再启动采集和Conky。
 
 若KDE恢复上次会话的旧Conky命令，只对配置路径精确等于原 `manjaro_conkyrc` 的同账户Conky发送终止信号，使用pidfd避免PID重用；其他Conky配置和应用不受影响。
 
@@ -27,3 +27,5 @@ python3 platforms/manjaro-plasma/run_tests.py
 `rollback_root.py` 会按自身路径定位目标根并确认Manjaro，限定恢复清单中的三份原文件，校验备份哈希并恢复原权限/所有权，不会写入当前Ubuntu的/root。
 
 接口依据：[KScreen JSON](https://github.com/KDE/libkscreen/blob/master/src/configserializer.cpp)、[输出逻辑几何](https://github.com/KDE/libkscreen/blob/master/src/output.cpp)。
+
+本轮7.5pt同步回退使用 `/root/.local/state/conky-top-sync/<事务时间>/rollback.py`，只恢复上一个已安装source；更早的root原主题回退工具仍保留，二者不要混用。

@@ -8,9 +8,10 @@ profile=Path(__file__).resolve().parent
 with tempfile.TemporaryDirectory(prefix='conky-plasma-tests-') as tmp:
     target=Path(tmp)/'source'
     shutil.copytree(profile.parents[1]/'portable',target,ignore=shutil.ignore_patterns('__pycache__'))
-    for name in ['plasma_compat.py','session_start.py','root_session_start.py','rollback_root.py']:
+    for name in ['plasma_compat.py','session_start.py','root_session_start.py','rollback_root.py','rollback_top.py']:
         shutil.copy2(profile/name,target/name)
     shutil.copy2(profile/'test_plasma.py',target/'tests/test_plasma.py')
     shutil.copy2(profile/'test_root_replacement.py',target/'tests/test_root_replacement.py')
+    shutil.copy2(profile/'test_top_rollback.py',target/'tests/test_top_rollback.py')
     p=target/'start.py';p.write_text(adapted_launcher(p.read_text()))
     sys.exit(subprocess.run([sys.executable,'-m','unittest','discover','-s','tests','-q'],cwd=target).returncode)

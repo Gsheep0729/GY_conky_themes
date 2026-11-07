@@ -64,3 +64,22 @@ python3 -m unittest discover -s tests -v
 配置视觉值回归测试只允许改变 background（由启动器管理前台进程）、text_buffer_size（容纳完整缓存）、显式 xinerama_head及移除最低700px高度；字体、颜色、边距、宽度与窗口样式仍和原模板逐项比对。54项测试通过，包含与上一版共享输入的正常/缺失/过期三组硬盘和网络输出逐字比对。短时采集与预览不能代替20分钟日用验收。
 
 接口参考：[Conky catp](https://conky.cc/variables#catp)、[内核 DRM 客户端统计](https://docs.kernel.org/gpu/drm-usage-stats.html)。
+
+## 顶部五列7.5pt（用户暂时接受，已授权提交与Manjaro同步）
+
+新增独立 `preview_top.py` / `top_tree.py`：系统、CPU/GPU、内存/网络、两列硬盘全部连接到同一根横向主干，树干在文字左侧、分支向右，根分区是左侧主干的最后一条分支。短列补齐竖线，不各自提前收尾；额外叠加细竖线补齐Noto行距造成的断口，字号及行高不变。按用户最新要求使用Noto Sans CJK SC粗体7.5pt（10pt与5pt的中间值），运行时间同号。字体宽度重新实测，列间距和连线桥接随之缩小。仅复用正式版缓存，不新增采集器，不修改正式布局或自启动。先按Xft真实字体宽度和DPI确定列宽，再输出Conky定位坐标；不足时换行，不缩字或丢字段。
+
+从源码入口临时运行：
+```bash
+python3 /absolute/path/to/portable/preview_top.py
+```
+结束时使用**同一份入口路径**：
+```bash
+python3 /absolute/path/to/portable/preview_top.py --stop
+```
+
+预览期间若与唯一的原竖版窗口相交，将其临时下移；正常关闭预览时恢复原位置，用户自行移动过则不覆盖其新位置。布局和临时位置记录在 `$XDG_RUNTIME_DIR/conky-top-preview`。预览不加入登录启动。当前Ubuntu实测，其他桌面/缩放组合仍待验证；不能将预览文件存在视为Manjaro已部署。
+
+正式顶部入口为 `top_start.py`：独立管理一个采集器和一个Conky，与classic启动器共享单实例锁，故无需运行竖版来提供缓存。既有配置字段 `layout` 增加 `top` 值；默认 `classic` 保持不变。top模式采集器只写JSON，由顶部显示器负责渲染，不改变采集字段/周期/权限。`start.py`遇到top配置会转交顶部正式入口。
+
+Manjaro root包装入口显式传 `--xwayland-backend`，保留Noto准备、30秒延迟和固定0号校验。`top_start.py --check --delay 0 --config <配置路径>` 可独立采集、生成配置并清理子进程，不打开窗口。Ubuntu本轮仍保持独立对照，未改正式安装和自启动。

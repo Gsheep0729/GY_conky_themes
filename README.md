@@ -1,28 +1,26 @@
-# Conky：原版树状 UI 与兼容候选
+# Conky：7.5pt顶部连通树与跨Linux采集
 
-当前Ubuntu已正式启用 `portable/` 的树线简约版，左右对比结束，仅保留一个实例及单一30秒自启。原中文粗体、运行时间标题、颜色和右侧树干沿用，大时钟和日期已移除。旧配置及原自启已备份，可逐项回退。
+用户暂时接受当前顶部五列版：**7.5pt中文粗体、文字左对齐、左侧树干向右分支、五列共用一根主干**。当前Ubuntu两倍缩放实测1750×180像素；列宽随实际字体测量，不硬编码到其他机器。
 
-候选CPU只显示占用率，GPU显示可见状态与各卡占用，内存仅显示已用GB；核显使用本用户渲染活动百分比。网络只显示下载/上传总速率，按物理网卡汇总，不列网卡/主机/IP/VPN信息。公网查询默认关闭。
+显示运行时间、系统/内核、CPU占用、GPU可见状态和占用、内存已用/总GB、两块硬盘型号/读写/温度及根分区、物理网卡总上下速率。核显标注本用户渲染活动；不显示IP，不主动唤醒挂起独显。
 
-- [候选说明与跨发行版安装、回退](portable/README.md)
-- [实际原版运行快照](versions/original-20261107/README.md)：本地 Git 提交 `f15873e`，含校验清单。
-- [Ubuntu正式启用与回退](UBUNTU-ACTIVATION-20261108.md)
-- [实施与验收记录](IMPLEMENTATION-20261107.md)
-- [已完成的字体、Dock、GPaste 验收](NON-CONKY-ACCEPTANCE-20261107.md)
+Ubuntu仍保留原竖版和横向对照；本轮提交源码并同步Manjaro，不替换Ubuntu自启动。Manjaro使用现有root桌面和原自启入口，独立启动采集器与顶部窗口；离线同步状态见记录，目标会话仍待实测。
 
-`nvidia_conkyrc`、`manjaro_conkyrc.txt`、旧 `start_conky.sh`、主题视频/图片、原始ZIP及既有Git历史均保留。旧配置包含固定设备名、sudo smartctl和公网查询命令，作为历史参考；新机器使用候选说明，不以root运行Conky。
+- [项目执行入口](AGENTS.md)
+- [顶部版与通用安装说明](portable/README.md)
+- [顶部布局验证](TOP-FIVE-PREVIEW-20261108.md)
+- [Manjaro同步与回退](MANJARO-TOP-SYNC-20261108.md)
+- [Manjaro Plasma专用说明](platforms/manjaro-plasma/README.md)
+- [旧Ubuntu竖版启用及回退](UBUNTU-ACTIVATION-20261108.md)
+- [原版快照](versions/original-20261107/README.md)
 
 ```bash
-cd portable
-python3 start.py --doctor
-python3 start.py --preview --delay 0 --preview-seconds 0
-python3 -m unittest discover -s tests -v
+python3 platforms/manjaro-plasma/run_tests.py
+python3 portable/start.py --doctor
 ```
 
-其他机器先确认 Xinerama 编号和目标连接器。Manjaro、KDE、Xfce和Ubuntu Xorg仍需实机验收，不能把当前Ubuntu Wayland和模拟测试当作全部平台通过。
+正式顶部入口为`portable/top_start.py`，比较入口为`portable/preview_top.py`。既有配置字段layout支持classic/top，默认classic不变。采集依赖Python标准库，显示依赖现有Conky、X11/XWayland、Xft和Noto CJK；无DISPLAY的纯Wayland不支持。固定0号屏匹配失败时停止，不能自动换到外屏。
 
-源码、原版快照和说明使用Git管理；生成的发行归档、双份事务备份与运行诊断不纳入Git。没有向远端推送。
+原始主题、图片/视频/ZIP和既有Git历史保留。历史配置中的sudo smartctl、公网查询与固定硬件名只作参考，不恢复到新运行流程。新机器默认普通用户运行，Manjaro现有root桌面是本用户明确授权的例外。
 
-本轮简约显示是在上一候选 `457197a` 上的独立提交，采集器/启动器未改。54项测试及实际窗口检查通过；硬盘和网络输出保持一致，左侧窗口由721px缩短至529px。此前该阶段仅做预览；2026-11-08用户已授权并完成Ubuntu正式替换及自启切换。
-
-Manjaro Plasma 实际自动登录root，已按用户明确授权原位替换/root中的旧主题/启动脚本/原自启，并撤回此前误装的mjr版本。固定0号屏和回退见 [专用说明](platforms/manjaro-plasma/README.md)。目标会话仍待实机验收。
+源码及说明纳入Git；备份、截图、运行日志和生成发行归档不纳入Git。当前Manjaro实际显示及其他发行版/桌面组合仍需实机验收。
