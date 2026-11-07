@@ -1,0 +1,11 @@
+{
+  "layout": "classic",
+  "monitor_index": 0,
+  "expected_connector": "eDP-1",
+  "start_delay": 30,
+  "sample_seconds": 2,
+  "gpu_seconds": 5,
+  "gpu_battery_seconds": 10,
+  "public_ip": false,
+  "gpu_roles": {}
+}
