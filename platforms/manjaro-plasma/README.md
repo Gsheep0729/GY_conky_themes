@@ -6,7 +6,7 @@
 
 ## 替换行为
 
-本轮同步目标改为已接受的7.5pt顶部连通树：左侧树干、分支向右、五列共享主干，内存已用/总量。独立正式入口为`top_start.py`，不依赖Ubuntu预览缓存；同步结果见项目 `MANJARO-TOP-SYNC-20261108.md`。此前a15f7dd竖版保留作回退。原启动脚本和原自启条目继续进入 `root_session_start.py`，再进入顶部正式启动器；没有另加一份root自启条目。先准备同款Noto CJK用户字体，延迟30秒，再启动采集和Conky。
+本轮已离线同步为用户暂时接受的7.5pt顶部连通树：左侧树干、分支向右、五列共享主干，内存已用/总量。独立正式入口为`top_start.py`，不依赖Ubuntu预览缓存；同步结果见项目 `MANJARO-TOP-SYNC-20261108.md`。此前a15f7dd竖版保留作回退。原启动脚本和原自启条目继续进入 `root_session_start.py`，再进入顶部正式启动器；没有另加一份root自启条目。先准备同款Noto CJK用户字体，延迟30秒，再启动采集和Conky。
 
 若KDE恢复上次会话的旧Conky命令，只对配置路径精确等于原 `manjaro_conkyrc` 的同账户Conky发送终止信号，使用pidfd避免PID重用；其他Conky配置和应用不受影响。
 
