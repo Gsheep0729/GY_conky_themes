@@ -33,11 +33,17 @@ def percent(value):
 
 
 def memory_gb(data, stale=False):
-    used=data.get('memory_used')
-    if stale or not isinstance(used,(int,float)) or isinstance(used,bool) or not math.isfinite(used) or used<0:
+    if stale:
         return '不可用'
-    approximate='≈' if data.get('memory_method')=='legacy estimate' else ''
-    return approximate+f'{used/1_000_000_000:.2f} GB'
+    def capacity(value, minimum):
+        if not isinstance(value,(int,float)) or isinstance(value,bool) or not math.isfinite(value) or value<minimum:
+            return '不可用'
+        return f'{value/1_000_000_000:.2f} GB'
+    used=capacity(data.get('memory_used'),0)
+    total=capacity(data.get('memory_total'),1)
+    if used!='不可用' and data.get('memory_method')=='legacy estimate':
+        used='≈'+used
+    return used+' / '+total
 
 
 def speed(value):
@@ -111,7 +117,7 @@ def render(data, template=None):
     if stale:
         gpu = gpu.replace('[ ' + topology(gpus) + ' ]', '[ 采集暂停/等待 · ' + topology(gpus) + ' ]')
     memory='${alignr}${color4}MEMORY INFO${color} ─┤\n'
-    memory+=rows(['< '+memory_gb(data,stale)+' > 已使用'])+'${alignr}│\n'
+    memory+=rows(['< '+memory_gb(data,stale)+' > 已用/总量'])+'${alignr}│\n'
     disks = data.get('disks', {}).get('devices', [])
     disk = '${alignr}${color4}HARD DISK${color} ─┤\n'
     disk_values = []

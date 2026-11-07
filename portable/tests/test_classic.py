@@ -38,7 +38,7 @@ class ClassicTest(unittest.TestCase):
     def test_minimal_display_keeps_uptime_font_and_tree(self):
         output = render(self.fixture())
         self.assertIn('${font Noto Sans CJK SC:bold:size=20}< ${uptime} > 运行时间', output)
-        self.assertIn('${alignr}< 8.00 GB > 已使用 ─┘   │', output)
+        self.assertIn('${alignr}< 8.00 GB / 16.00 GB > 已用/总量 ─┘   │', output)
         self.assertIn('Test Linux',output)
         self.assertIn('${kernel}',output)
         for removed in ['${time','${machine}','${mem}','${memmax}','${memperc}','Test CPU','55°C']:
@@ -56,13 +56,16 @@ class ClassicTest(unittest.TestCase):
         self.assertNotIn('复制', output)
 
     def test_memory_decimal_GB_estimate_zero_and_unknown(self):
-        self.assertEqual(memory_gb({'memory_used':8750000000,'memory_method':'MemAvailable'}),'8.75 GB')
-        self.assertEqual(memory_gb({'memory_used':1073741824}),'1.07 GB')
-        self.assertEqual(memory_gb({'memory_used':8750000000,'memory_method':'legacy estimate'}),'≈8.75 GB')
-        self.assertEqual(memory_gb({'memory_used':0}),'0.00 GB')
+        total={'memory_total':16000000000}
+        self.assertEqual(memory_gb(dict(total,memory_used=8750000000,memory_method='MemAvailable')),'8.75 GB / 16.00 GB')
+        self.assertEqual(memory_gb(dict(total,memory_used=1073741824)),'1.07 GB / 16.00 GB')
+        self.assertEqual(memory_gb(dict(total,memory_used=8750000000,memory_method='legacy estimate')),'≈8.75 GB / 16.00 GB')
+        self.assertEqual(memory_gb(dict(total,memory_used=0)),'0.00 GB / 16.00 GB')
         for value in [None,-1,float('nan'),float('inf'),'8GB',True]:
-            with self.subTest(value=value):self.assertEqual(memory_gb({'memory_used':value}),'不可用')
-        self.assertEqual(memory_gb({'memory_used':8750000000},stale=True),'不可用')
+            with self.subTest(value=value):self.assertEqual(memory_gb(dict(total,memory_used=value)),'不可用 / 16.00 GB')
+        for value in [None,0,-1,float('nan'),float('inf'),'16GB',True]:
+            with self.subTest(total=value):self.assertEqual(memory_gb({'memory_used':8750000000,'memory_total':value}),'8.75 GB / 不可用')
+        self.assertEqual(memory_gb(dict(total,memory_used=8750000000),stale=True),'不可用')
 
     def test_single_and_dual_GPU_only_show_topology_and_loads(self):
         integrated=self.fixture()['gpus'][0]
