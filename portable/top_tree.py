@@ -143,7 +143,7 @@ def layout(data, available, scale, measure):
     titles=['系统','CPU / GPU','内存 / 网络','硬盘 1','硬盘 2']
     reserves=[['运行时间 ${uptime}'],['CPU  100.0%','核显渲染（本用户）  100.0%',
                 '核显（驱动未接管）  不可用','独显占用  不可用'],
-              ['内存 ≈9999.99 GB / 9999.99 GB','下载 ↓ 999.9GiB/s','上传 ↑ 999.9GiB/s'],
+              ['内存 ≈9999.99 GiB / 9999.99 GiB','下载 ↓ 999.9GiB/s','上传 ↑ 999.9GiB/s'],
               ['读 999.9GiB/s  写 999.9GiB/s','温度 不可用'],
               ['读 999.9GiB/s  写 999.9GiB/s','温度 不可用']]
     gap=round(12*scale*SIZE_RATIO);branch=measure('├─ ')+round(5*scale*SIZE_RATIO)

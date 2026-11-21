@@ -38,7 +38,7 @@ def memory_gb(data, stale=False):
     def capacity(value, minimum):
         if not isinstance(value,(int,float)) or isinstance(value,bool) or not math.isfinite(value) or value<minimum:
             return '不可用'
-        return f'{value/1_000_000_000:.2f} GB'
+        return f'{value/1_073_741_824:.2f} GiB'
     used=capacity(data.get('memory_used'),0)
     total=capacity(data.get('memory_total'),1)
     if used!='不可用' and data.get('memory_method')=='legacy estimate':
