@@ -19,3 +19,11 @@ Ubuntu当前对照继续，不因Manjaro部署而改其安装或自启。基础�
 - 本轮回退：在Manjaro root终端运行 `python3 /root/.local/state/conky-top-sync/20261108-050233/rollback.py`。只恢复本轮前source；遇到后续用户修改会停止，原字体/自启动和其他桌面设置不动，仍由用户手动重登。
 
 实际进入Manjaro后，首先检查原自启动是否只产生一个顶部窗口、固定0号匹配、7.5pt可读性和顶栏间距，再核对GPU/内存/硬盘/网络。当前Ubuntu1750×180px只作为该Ubuntu会话的实测，不能直接写成Manjaro已显示的尺寸。
+
+## 2026-11-22 内存 GiB 同步
+
+已将源码提交 `ee7fa3c` 中的 `classic.py` 与 `top_tree.py` 同步到 Manjaro root 现有安装，内存已用与总量均显示GiB。写入前核对原 `cba7341` 文件散列，写后两文件散列回读匹配；原本地配置、旧启动脚本和自启动条目不变。85项跨平台模拟测试通过。
+
+目标写前文件双份备份并校验：`/home/gy_ubuntu/Conky-Manjaro-GiB同步备份-20261122-001835` 和项目 `backups/manjaro-gib-20261122-001835`。目标回退仅恢复这两个文件：`python3 /root/.local/state/conky-gib-sync/20261122-001835/rollback.py`；若文件后来被修改则停止，不覆盖用户修改。
+
+此次是离线同步，尚未进入 Manjaro 桌面验证显示或自启动，不改变固定0号及eDP-1约束。
